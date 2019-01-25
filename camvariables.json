@@ -1,0 +1,531 @@
+{
+  "input_groups": [
+    {
+      "name": "Globals",
+      "label": "Globals"
+    },
+    {
+      "name": "undefined",
+      "label": "undefined"
+    },
+    {
+      "name": "Networking",
+      "label": "Networking"
+    },
+    {
+      "name": "Instances",
+      "label": "Instances"
+    },
+    {
+      "name": "Security",
+      "label": "Security"
+    },
+    {
+      "name": "Other",
+      "label": "Other"
+    },
+    {
+      "name": "Unused",
+      "label": "Unused"
+    }
+  ],
+  "output_groups": [ ],
+  "template_input_params": [
+    {
+      "name": "aws_region",
+      "label": "Aws Region",
+      "description": "One of us-east-2, us-east-1, us-west-1, us-west-2, ap-south-1, ap-northeast-2, ap-southeast-1, ap-southeast-2, ap-northeast-1, us-west-2, eu-central-1, eu-west-1, eu-west-2, sa-east-1",
+      "type": "string",
+      "options": [
+        {
+            "value": "us-east-1",
+            "label": "US East (N. Virginia)",
+            "default": true
+        },
+        {
+            "value": "us-east-2",
+            "label": "US East (Ohio)"
+        },
+        {
+            "value": "us-west-1",
+            "label": "US West (N. California)"
+        },
+        {
+            "value": "us-west-2",
+            "label": "US West (Oregon)"
+        },
+        {
+            "value": "us-gov-west-1",
+            "label": "US GovCloud Region"
+        },
+        {
+            "value": "ca-central-1",
+            "label": "Canada (Central)"
+        },
+        {
+            "value": "eu-west-1",
+            "label": "EU (Ireland)"
+        },
+        {
+            "value": "eu-central-1",
+            "label": "EU (Frankfurt)"
+        },
+        {
+            "value": "eu-west-2",
+            "label": "EU (London)"
+        },
+        {
+            "value": "ap-northeast-1",
+            "label": "Asia Pacific (Tokyo)"
+        },
+        {
+            "value": "ap-northeast-2",
+            "label": "Asia Pacific (Seoul)"
+        },
+        {
+            "value": "ap-southeast-1",
+            "label": "Asia Pacific (Singapore)"
+        },
+        {
+            "value": "ap-southeast-2",
+            "label": "Asia Pacific (Sydney)"
+        },
+        {
+            "value": "ap-south-1",
+            "label": "Asia Pacific (Mumbai)"
+        },
+        {
+            "value": "sa-east-1",
+            "label": "South America (São Paulo)"
+        }
+      ],
+      "group_name": "Globals",
+      "required": true,
+      "secured": false,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },
+    {
+      "name": "azs",
+      "label": "Availability Zones",
+      "description": "The availability zone letter appendix you want to deploy to in the selected region ",
+      "type": "list",
+      "default": [
+        "a",
+        "b",
+        "c"
+      ],
+      "validation": "",
+      "group_name": "Globals",
+      "required": true,
+      "secured": false,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },    
+    {
+      "name": "key_name",
+      "label": "Key Name",
+      "description": "Name of the EC2 key pair",
+      "type": "string",
+      "group_name": "Globals",
+      "required": false,
+      "secured": false,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },
+    {
+      "name": "privatekey",
+      "label": "Private Key",
+      "description": "base64 encoded private key file contents",
+      "type": "string",
+      "group_name": "Globals",
+      "required": false,
+      "secured": true,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },
+    {
+      "name": "vpcname",
+      "label": "VPC Name",
+      "description": "Vpcname",
+      "type": "string",
+      "default": "icp-vpc",
+      "group_name": "Networking",
+      "required": true,
+      "secured": false,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },
+    {
+      "name": "cidr",
+      "label": "Cidr",
+      "description": "Cidr",
+      "type": "string",
+      "default": "10.10.0.0/16",
+      "group_name": "Networking",
+      "required": true,
+      "secured": false,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },
+    {
+      "name": "subnetname",
+      "label": "Subnet Name",
+      "description": "Subnet Name",
+      "type": "string",
+      "default": "icp-subnet",
+      "group_name": "Networking",
+      "required": true,
+      "secured": false,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },
+    {
+      "name": "subnet_cidrs",
+      "label": "Subnet Cidrs",
+      "description": "List of subnet CIDRs",
+      "type": "list",
+      "default": [
+        "10.10.10.0/24",
+        "10.10.11.0/24",
+        "10.10.12.0/24"
+      ],
+      "group_name": "Networking",
+      "required": true,
+      "secured": false,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },
+    {
+      "name": "pub_subnet_cidrs",
+      "label": "Pub Subnet Cidrs",
+      "description": "List of subnet CIDRs",
+      "type": "list",
+      "default": [
+        "10.10.20.0/24",
+        "10.10.21.0/24",
+        "10.10.22.0/24"
+      ],
+      "group_name": "Networking",
+      "required": true,
+      "secured": false,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },
+    {
+      "name": "private_domain",
+      "label": "Private Domain",
+      "description": "Private Domain",
+      "type": "string",
+      "default": "icp-cluster.icp",
+      "group_name": "Globals",
+      "required": true,
+      "secured": false,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },
+    {
+      "name": "ami",
+      "label": "Amazon Machine Image (AMI-ID)",
+      "description": "Ami",
+      "type": "string",
+      "group_name": "Globals",
+      "options": [
+        {
+          "value": "ami-0f9cf087c1f27d9b1",
+          "label": "us-east-1  - Ubuntu 16.04",
+          "default": "true"
+        },
+        {
+          "value": "ami-0653e888ec96eab9b",
+          "label": "us-east-2  - Ubuntu 16.04"
+        },
+        {
+          "value": "ami-007927d10cda943c7",
+          "label": "us-west-1  - Ubuntu 16.04"
+        },
+        {
+          "value": "ami-01dd90796d1ad1ae8",
+          "label": "us-west-2  - Ubuntu 16.04"
+        }
+      ],
+      "required": true,
+      "secured": false,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },
+    {
+      "name": "bastion",
+      "label": "Bastion",
+      "description": "Bastion host used for debugging",
+      "type": "map",
+      "default": {
+        "nodes": "1",
+        "type": "t2.micro",
+        "ami": "ami-0f9cf087c1f27d9b1",
+        "disk": "10"
+      },
+      "group_name": "Globals",
+      "required": true,
+      "secured": false,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },
+    {
+      "name": "master",
+      "label": "Master",
+      "description": "Master",
+      "type": "map",
+      "default": {
+        "nodes": "3",
+        "type": "m4.2xlarge",
+        "ami": "ami-0f9cf087c1f27d9b1",
+        "disk": "300",
+        "docker_vol": "100",
+        "ebs_optimized": true
+      },
+      "group_name": "Globals",
+      "required": true,
+      "secured": false,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },
+    {
+      "name": "proxy",
+      "label": "Proxy",
+      "description": "Proxy",
+      "type": "map",
+      "default": {
+        "nodes": "3",
+        "type": "m4.xlarge",
+        "ami": "ami-0f9cf087c1f27d9b1",
+        "disk": "150",
+        "docker_vol": "100",
+        "ebs_optimized": true
+      },
+      "group_name": "Globals",
+      "required": true,
+      "secured": false,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },
+    {
+      "name": "management",
+      "label": "Management",
+      "description": "Management",
+      "type": "map",
+      "default": {
+        "nodes": "3",
+        "type": "m4.2xlarge",
+        "ami": "ami-0f9cf087c1f27d9b1",
+        "disk": "300",
+        "docker_vol": "100",
+        "ebs_optimized": true
+      },
+      "group_name": "Globals",
+      "required": true,
+      "secured": false,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },
+    {
+      "name": "worker",
+      "label": "Worker",
+      "description": "Worker",
+      "type": "map",
+      "default": {
+        "nodes": "3",
+        "type": "m4.2xlarge",
+        "ami": "ami-0f9cf087c1f27d9b1",
+        "disk": "150",
+        "docker_vol": "100",
+        "ebs_optimized": true
+      },
+      "group_name": "Globals",
+      "required": true,
+      "secured": false,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },
+    {
+      "name": "va",
+      "label": "Va",
+      "description": "Va",
+      "type": "map",
+      "default": {
+        "nodes": "3",
+        "type": "m4.2xlarge",
+        "ami": "ami-0f9cf087c1f27d9b1",
+        "disk": "300",
+        "docker_vol": "100",
+        "ebs_optimized": true
+      },
+      "group_name": "Globals",
+      "required": true,
+      "secured": false,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },
+    {
+      "name": "instance_name",
+      "label": "Instance Name",
+      "description": "Instance Name",
+      "type": "string",
+      "default": "icp",
+      "group_name": "Globals",
+      "required": true,
+      "secured": false,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },
+    {
+      "name": "icppassword",
+      "label": "ICP Password",
+      "description": "ICP Password",
+      "type": "password",
+      "group_name": "Globals",
+      "required": true,
+      "secured": true,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },
+    {
+      "name": "docker_package_location",
+      "label": "Docker Package Location",
+      "description": "When installing ICP EE on RedHat. Prefix location string with http: or nfs: to indicate protocol ",
+      "type": "string",
+      "group_name": "Globals",
+      "required": false,
+      "secured": false,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },
+    {
+      "name": "image_location",
+      "label": "Image Location",
+      "description": "Image location when installing EnterPrise edition. prefix location string with http: or nfs: to indicate protocol",
+      "type": "string",
+      "group_name": "Globals",
+      "required": true,
+      "secured": false,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    },
+    {
+      "name": "icp_inception_image",
+      "label": "Icp Inception Image",
+      "description": "icp-inception bootstrap image repository",
+      "type": "string",
+      "default": "ibmcom/icp-inception-amd64:3.1.1-ee",
+      "group_name": "Globals",
+      "required": true,
+      "secured": false,
+      "hidden": false,
+      "immutable": false,
+      "immutable_after_create": false
+    }
+  ],
+  "template_output_params": [
+    {
+      "name": "ICP Console ELB DNS (internal)",
+      "label": "Icp Console Elb Dns ( Internal )",
+      "description": "Icp Console Elb Dns ( Internal )",
+      "group_name": "",
+      "secured": false,
+      "hidden": false,
+      "shortname": "",
+      "type": "string"
+    },
+    {
+      "name": "ICP Proxy ELB DNS (internal)",
+      "label": "Icp Proxy Elb Dns ( Internal )",
+      "description": "Icp Proxy Elb Dns ( Internal )",
+      "group_name": "",
+      "secured": false,
+      "hidden": false,
+      "shortname": "",
+      "type": "string"
+    },
+    {
+      "name": "ICP Console URL",
+      "label": "Icp Console Url",
+      "description": "Icp Console Url",
+      "group_name": "",
+      "secured": false,
+      "hidden": false,
+      "shortname": "",
+      "type": "string"
+    },
+    {
+      "name": "ICP Registry ELB URL",
+      "label": "Icp Registry Elb Url",
+      "description": "Icp Registry Elb Url",
+      "group_name": "",
+      "secured": false,
+      "hidden": false,
+      "shortname": "",
+      "type": "string"
+    },
+    {
+      "name": "ICP Kubernetes API URL",
+      "label": "Icp Kubernetes Api Url",
+      "description": "Icp Kubernetes Api Url",
+      "group_name": "",
+      "secured": false,
+      "hidden": false,
+      "shortname": "",
+      "type": "string"
+    },
+    {
+      "name": "ICP Admin Username",
+      "label": "Icp Admin Username",
+      "description": "Icp Admin Username",
+      "group_name": "",
+      "secured": false,
+      "hidden": false,
+      "shortname": "",
+      "type": "string"
+    },
+    {
+      "name": "ICP Admin Password",
+      "label": "Icp Admin Password",
+      "description": "Icp Admin Password",
+      "group_name": "",
+      "secured": false,
+      "hidden": false,
+      "shortname": "",
+      "type": "string"
+    },
+    {
+      "name": "bootmaster",
+      "label": "Bootmaster",
+      "description": "Bootmaster",
+      "group_name": "",
+      "secured": false,
+      "hidden": false,
+      "shortname": "",
+      "type": "string"
+    }
+  ]
+}
