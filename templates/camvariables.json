@@ -475,7 +475,7 @@
       "secured": false,
       "hidden": false,
       "shortname": "",
-      "type": "string"
+      "type": "url"
     },
     {
       "name": "ICP Registry ELB URL",
@@ -485,7 +485,7 @@
       "secured": false,
       "hidden": false,
       "shortname": "",
-      "type": "string"
+      "type": "url"
     },
     {
       "name": "ICP Kubernetes API URL",
@@ -495,7 +495,7 @@
       "secured": false,
       "hidden": false,
       "shortname": "",
-      "type": "string"
+      "type": "url"
     },
     {
       "name": "ICP Admin Username",
@@ -526,6 +526,36 @@
       "hidden": false,
       "shortname": "",
       "type": "string"
-    }
+    },
+    {
+      "name": "vm_os_private_key",
+      "description": "Private SSH key to use while configuring the IBM Cloud Private Boot Node (base64 encoded)",
+      "type": "string",
+      "secured": false,
+      "label": "Boot Node User Private SSH Key (base64 encoded)",
+      "hidden": false,
+      "group_name": "",
+      "shortname": ""
+    },
+    {
+      "name": "bastion_host",
+      "label": "Bastion Host IP",
+      "description": "Bastion Host IP address.",
+      "group_name": "",
+      "secured": false,
+      "hidden": false,
+      "shortname": "",
+      "type": "string"
+    }, 
+    {
+      "name": "cluster_ca_domain",
+      "label": "Cluster CA Domain",
+      "description": "Cluster Certification Authority Domain address.",
+      "group_name": "",
+      "secured": false,
+      "hidden": false,
+      "shortname": "",
+      "type": "string"
+    }    
   ]
 }

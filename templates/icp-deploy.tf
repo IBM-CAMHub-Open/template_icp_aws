@@ -66,8 +66,16 @@ EOF
 #  source = "${path.module}/items-config.yaml"
 }
 
+output "cluster_ca_domain" {
+  value =  "${var.user_provided_cert_dns != "" ? var.user_provided_cert_dns : aws_lb.icp-console.dns_name}"
+}
+
 resource "tls_private_key" "installkey" {
   algorithm   = "RSA"
+}
+
+output "vm_os_private_key" {
+  value = "${base64encode(tls_private_key.installkey.private_key_pem)}"
 }
 
 resource "aws_s3_bucket_object" "ssh_key" {
@@ -103,3 +111,4 @@ output "ICP Admin Username" {
 output "ICP Admin Password" {
   value = "${var.icppassword}"
 }
+

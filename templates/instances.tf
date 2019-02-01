@@ -126,7 +126,8 @@ resource "aws_instance" "icpmaster" {
     "aws_s3_bucket_object.functions",
     "aws_s3_bucket_object.start_install"
   ]
-
+  #subnet_id     = "${element(aws_subnet.icp_public_subnet.*.id, count.index)}"
+  #associate_public_ip_address = true
   count         = "${var.master["nodes"]}"
   key_name      = "${var.key_name}"
   ami           = "${var.master["ami"] != "" ? var.master["ami"] : local.default_ami }"
@@ -203,6 +204,55 @@ resolv_conf:
   searchdomains:
   - ${random_id.clusterid.hex}.${var.private_domain}
 EOF
+}
+
+##
+#Monitor completion of ICP deploy.
+##
+resource "null_resource" "wait_for_icp"{
+  depends_on = [
+    "aws_instance.bastion",
+	"aws_instance.icpmaster",
+	"tls_private_key.installkey"
+  ]
+  
+  # Specify the ssh connection
+  connection {
+  	type				= "ssh"
+    user 				= "icpdeploy"
+    host				= "${aws_instance.icpmaster.0.private_ip}" 
+    private_key 		= "${tls_private_key.installkey.private_key_pem}"
+    bastion_host        = "${aws_instance.bastion.0.public_ip}"
+    bastion_user        = "ubuntu"
+    bastion_private_key = "${base64decode(var.privatekey)}"
+    bastion_port        = "22"
+  }
+    
+  provisioner "file" {
+    destination = "verify_icp_install.sh"
+    content = <<EOF
+#!/bin/bash
+while true
+do
+file="/opt/ibm/cluster/icp_install_completed"
+if [ -f "$file" ]
+then
+echo "ICP deployment completed ..."
+exit 0
+else
+echo "Wait for ICP deployment to be completed ..."
+sleep 30
+fi
+done      
+EOF
+  }  
+  # Execute the script remotely
+  provisioner "remote-exec" {
+    inline = [
+      "bash -c 'sudo chmod +x verify_icp_install.sh'",
+      "bash -c 'sudo ./verify_icp_install.sh'"
+    ]
+  }  
 }
 
 resource "aws_instance" "icpproxy" {
@@ -504,6 +554,10 @@ EOF
 
 output "bootmaster" {
   value = "${aws_instance.icpmaster.0.private_ip}"
+}
+
+output "bastion_host" {
+  value = "${aws_instance.bastion.0.public_ip}"
 }
 
 resource "aws_network_interface" "mastervip" {

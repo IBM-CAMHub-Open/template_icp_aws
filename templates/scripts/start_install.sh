@@ -154,7 +154,11 @@ for script in ${s3_patch_scripts}; do
   docker run -e LICENSE=accept -t --net=host -v /opt/ibm/cluster:/installer/cluster ${inception_image} ./cluster/${script_name}
   rm -f /opt/ibm/cluster/${script_name}
 done
-
+##
+#File to indicate completion of ICP install. Can be used
+#to monitor the completion using terrafrom null_resource.
+##
+touch /opt/ibm/cluster/icp_install_completed
 # REVERTED BACK TO EBS-BASED REGISTRY SUPPORT IN ICP 3.1.0
 # patch the registry to use our S3 bucket
 #region=`curl http://169.254.169.254/latest/dynamic/instance-identity/document | grep "region" | awk -F: '{print $2}' | sed -e 's/[ ",]//g'`
