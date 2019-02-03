@@ -1,4 +1,58 @@
 {
+  "output_datatypes": [
+     {
+       "name": "com.ibm.cloud.cloudconnections.ICP",
+       "dataobject": {
+         "name": "${template_input_params.instance_name}",
+         "attributes": [
+           {
+             "name": "username",
+             "value": "${template_output_params.ICP Admin Username}"
+           },
+           {
+             "name": "password",
+             "value": "${template_output_params.ICP Admin Password}"
+           },
+           {
+             "name": "ICP_server",
+             "value": "${template_output_params.ICP Console ELB DNS (internal)}"
+           }
+         ]
+       }
+     },
+     {
+       "name": "bastionhost",
+       "dataobject": {
+         "name": "${template_input_params.instance_name}BastionHost",
+         "attributes": [
+           {
+             "name": "bastion_host",
+             "value": "${template_output_params.bastion_host}"
+           },
+           {
+             "name": "bastion_user",
+             "value": "ubuntu"
+           },
+           {
+             "name": "bastion_private_key",
+             "value": "${template_input_params.privatekey}"
+           },
+           {
+             "name": "bastion_port",
+             "value": "22"
+           },
+           {
+             "name": "bastion_password",
+             "value": ""
+           },
+           {
+             "name": "bastion_host_key",
+             "value": ""
+           }           
+         ]
+       }     
+     }
+   ],
   "input_groups": [
     {
       "name": "Globals",

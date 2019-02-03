@@ -213,7 +213,8 @@ resource "null_resource" "wait_for_icp"{
   depends_on = [
     "aws_instance.bastion",
 	"aws_instance.icpmaster",
-	"tls_private_key.installkey"
+	"tls_private_key.installkey",
+	"aws_lb.icp-console"
   ]
   
   # Specify the ssh connection
@@ -232,18 +233,43 @@ resource "null_resource" "wait_for_icp"{
     destination = "verify_icp_install.sh"
     content = <<EOF
 #!/bin/bash
+password=${var.icppassword}
 while true
 do
 file="/opt/ibm/cluster/icp_install_completed"
 if [ -f "$file" ]
 then
 echo "ICP deployment completed ..."
-exit 0
+break
 else
 echo "Wait for ICP deployment to be completed ..."
-sleep 30
+sleep 120
 fi
-done      
+done 
+while true
+do
+response=`curl -s -o /dev/null -I -w "%{http_code}" -k https://${var.user_provided_cert_dns != "" ? var.user_provided_cert_dns : aws_lb.icp-console.dns_name}:8443/oidc/login.jsp`
+if [ $response != 200 ]; then
+echo "Login response is $${response}. Wait for ICP application to be available ..."
+sleep 120
+else
+echo "Login response is $${response}. ICP application is available now ..."
+break
+fi
+done   
+while true
+do
+pre_req_check=`sudo cloudctl login -u admin -p $${password} -a https://${var.user_provided_cert_dns != "" ? var.user_provided_cert_dns : aws_lb.icp-console.dns_name}:8443 -n kube-system --skip-ssl-validation`
+result=$?
+echo $pre_req_check
+if [ $result -eq "0" ]; then
+echo "ICP application is available now ..."	
+exit 0
+else
+echo "Prerequisite check failed. Wait for ICP to be available ..."
+sleep 120
+fi
+done  
 EOF
   }  
   # Execute the script remotely
