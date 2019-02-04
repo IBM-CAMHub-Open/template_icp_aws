@@ -7,15 +7,15 @@
          "attributes": [
            {
              "name": "username",
-             "value": "${template_output_params.ICP Admin Username}"
+             "value": "${template_output_params.ICP_Admin_Username}"
            },
            {
              "name": "password",
-             "value": "${template_output_params.ICP Admin Password}"
+             "value": "${template_output_params.ICP_Admin_Password}"
            },
            {
              "name": "ICP_server",
-             "value": "${template_output_params.ICP Console ELB DNS (internal)}"
+             "value": "${template_output_params.ICP_Console_ELB_DNS}"
            }
          ]
        }
@@ -502,7 +502,7 @@
   ],
   "template_output_params": [
     {
-      "name": "ICP Console ELB DNS (internal)",
+      "name": "ICP_Console_ELB_DNS",
       "label": "Icp Console Elb Dns ( Internal )",
       "description": "Icp Console Elb Dns ( Internal )",
       "group_name": "",
@@ -512,7 +512,7 @@
       "type": "string"
     },
     {
-      "name": "ICP Proxy ELB DNS (internal)",
+      "name": "ICP_Proxy_ELB_DNS_internal",
       "label": "Icp Proxy Elb Dns ( Internal )",
       "description": "Icp Proxy Elb Dns ( Internal )",
       "group_name": "",
@@ -522,7 +522,7 @@
       "type": "string"
     },
     {
-      "name": "ICP Console URL",
+      "name": "ICP_Console_URL",
       "label": "Icp Console Url",
       "description": "Icp Console Url",
       "group_name": "",
@@ -532,7 +532,7 @@
       "type": "url"
     },
     {
-      "name": "ICP Registry ELB URL",
+      "name": "ICP_Registry_ELB_URL",
       "label": "Icp Registry Elb Url",
       "description": "Icp Registry Elb Url",
       "group_name": "",
@@ -542,7 +542,7 @@
       "type": "url"
     },
     {
-      "name": "ICP Kubernetes API URL",
+      "name": "ICP_Kubernetes_API_URL",
       "label": "Icp Kubernetes Api Url",
       "description": "Icp Kubernetes Api Url",
       "group_name": "",
@@ -552,7 +552,7 @@
       "type": "url"
     },
     {
-      "name": "ICP Admin Username",
+      "name": "ICP_Admin_Username",
       "label": "Icp Admin Username",
       "description": "Icp Admin Username",
       "group_name": "",
@@ -562,7 +562,7 @@
       "type": "string"
     },
     {
-      "name": "ICP Admin Password",
+      "name": "ICP_Admin_Password",
       "label": "Icp Admin Password",
       "description": "Icp Admin Password",
       "group_name": "",

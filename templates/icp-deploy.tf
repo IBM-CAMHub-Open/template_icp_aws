@@ -84,31 +84,31 @@ resource "aws_s3_bucket_object" "ssh_key" {
   content = "${tls_private_key.installkey.private_key_pem}"
 }
 
-output "ICP Console ELB DNS (internal)" {
+output "ICP_Console_ELB_DNS" {
   value = "${aws_lb.icp-console.dns_name}"
 }
 
-output "ICP Proxy ELB DNS (internal)" {
+output "ICP_Proxy_ELB_DNS_internal" {
   value = "${aws_lb.icp-proxy.dns_name}"
 }
 
-output "ICP Console URL" {
+output "ICP_Console_URL" {
   value = "https://${var.user_provided_cert_dns != "" ? var.user_provided_cert_dns : aws_lb.icp-console.dns_name}:8443"
 }
 
-output "ICP Registry ELB URL" {
+output "ICP_Registry_ELB_URL" {
   value = "https://${aws_lb.icp-console.dns_name}:8500"
 }
 
-output "ICP Kubernetes API URL" {
+output "ICP_Kubernetes_API_URL" {
   value = "https://${aws_lb.icp-console.dns_name}:8001"
 }
 
-output "ICP Admin Username" {
+output "ICP_Admin_Username" {
   value = "admin"
 }
 
-output "ICP Admin Password" {
+output "ICP_Admin_Password" {
   value = "${var.icppassword}"
 }
 
