@@ -3,7 +3,13 @@ resource "random_id" "clusterid" {
   byte_length = "2"
 }
 
+# Generate a ICP admin password
+resource "random_id" "adminpassword" {
+  byte_length = "8"
+}
+
 locals  {
+  icppassword    = "${var.icppassword != "" ? "${var.icppassword}" : "${random_id.adminpassword.hex}"}"
   iam_ec2_instance_profile_id = "${var.existing_ec2_iam_instance_profile_name != "" ?
         var.existing_ec2_iam_instance_profile_name :
         element(concat(aws_iam_instance_profile.icp_ec2_instance_profile.*.id, list("")), 0)}"
@@ -115,7 +121,6 @@ EOF
 resource "aws_instance" "icpmaster" {
   depends_on = [
     "aws_route_table_association.a",
-    "null_resource.icp_install_package",
     "aws_s3_bucket_object.docker_install_package",
     "aws_s3_bucket_object.hostfile",
     "aws_s3_bucket_object.icp_cert_crt",
@@ -233,7 +238,7 @@ resource "null_resource" "wait_for_icp"{
     destination = "verify_icp_install.sh"
     content = <<EOF
 #!/bin/bash
-password=${var.icppassword}
+password=${local.icppassword}
 while true
 do
 file="/opt/ibm/cluster/icp_install_completed"
@@ -284,7 +289,6 @@ EOF
 resource "aws_instance" "icpproxy" {
   depends_on = [
     "aws_route_table_association.a",
-    "null_resource.icp_install_package",
     "aws_s3_bucket_object.bootstrap",
     "aws_s3_bucket_object.docker_install_package"
   ]
@@ -359,7 +363,6 @@ EOF
 resource "aws_instance" "icpmanagement" {
   depends_on = [
     "aws_route_table_association.a",
-    "null_resource.icp_install_package",
     "aws_s3_bucket_object.bootstrap",
     "aws_s3_bucket_object.docker_install_package"
   ]
@@ -432,7 +435,6 @@ EOF
 resource "aws_instance" "icpva" {
   depends_on = [
     "aws_route_table_association.a",
-    "null_resource.icp_install_package",
     "aws_s3_bucket_object.bootstrap",
     "aws_s3_bucket_object.docker_install_package"
   ]
@@ -509,7 +511,6 @@ resource "aws_instance" "icpnodes" {
   # Make sure the nodes will have internet access before provisioning
   depends_on = [
     "aws_route_table_association.a",
-    "null_resource.icp_install_package",
     "aws_s3_bucket_object.bootstrap",
     "aws_s3_bucket_object.docker_install_package"
   ]

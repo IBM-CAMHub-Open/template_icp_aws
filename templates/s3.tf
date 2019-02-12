@@ -16,27 +16,6 @@ data "aws_s3_bucket" "icp_binaries" {
 
 #}
 
-resource "null_resource" "icp_install_package" {
-  count         = "${var.image_location != "" && substr(var.image_location, 0, min(2, length(var.image_location))) != "s3" ? 1 : 0}"
-
-  depends_on = [
-    "null_resource.install_aws_cli"
-  ]
-  # due to AWS provider not supporting multi-part uploads,
-  # we have to use the AWS CLI to upload the binary instead
-
-#  provisioner "local-exec" {
-#    command = <<EOF
-#${path.module}/awscli/bin/aws s3 cp ${var.image_location}  s3://${aws_s3_bucket.icp_binaries.id}/ibm-cloud-private.tar.gz
-#EOF
-
-    # AWS credentials?
-#    environment = {
-
-#    }
-#  }
-}
-
 # upload binaries to created s3 bucket
 resource "aws_s3_bucket_object" "docker_install_package" {
   count  = "${var.docker_package_location != "" && substr(var.docker_package_location, 0, min(2, length(var.docker_package_location))) != "s3" ? 1 : 0}"

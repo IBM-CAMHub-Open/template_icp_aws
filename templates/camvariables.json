@@ -3,7 +3,7 @@
      {
        "name": "com.ibm.cloud.cloudconnections.ICP",
        "dataobject": {
-         "name": "${template_input_params.instance_name}",
+         "name": "${template_output_params.connection_name}",
          "attributes": [
            {
              "name": "username",
@@ -23,7 +23,7 @@
      {
        "name": "bastionhost",
        "dataobject": {
-         "name": "${template_input_params.instance_name}BastionHost",
+         "name": "${template_output_params.connection_name}BastionHost",
          "attributes": [
            {
              "name": "bastion_host",
@@ -87,8 +87,8 @@
   "template_input_params": [
     {
       "name": "aws_region",
-      "label": "Aws Region",
-      "description": "One of us-east-2, us-east-1, us-west-1, us-west-2, ap-south-1, ap-northeast-2, ap-southeast-1, ap-southeast-2, ap-northeast-1, us-west-2, eu-central-1, eu-west-1, eu-west-2, sa-east-1",
+      "label": "AWS Region",
+      "description": "AWS region to deploy your ICP cluster nodes.",
       "type": "string",
       "options": [
         {
@@ -163,7 +163,7 @@
     {
       "name": "azs",
       "label": "Availability Zones",
-      "description": "The availability zone letter appendix you want to deploy to in the selected region ",
+      "description": "The availability zone letter identifier in the above selected region.",
       "type": "list",
       "default": [
         "a",
@@ -181,7 +181,7 @@
     {
       "name": "key_name",
       "label": "Key Name",
-      "description": "Name of the EC2 key pair",
+      "description": "Name of the EC2 key pair.",
       "type": "string",
       "group_name": "Globals",
       "required": false,
@@ -193,19 +193,21 @@
     {
       "name": "privatekey",
       "label": "Private Key",
-      "description": "base64 encoded private key file contents",
+      "description": "Base64 encoded private key file contents of the EC2 key pair.",
       "type": "string",
       "group_name": "Globals",
       "required": false,
       "secured": true,
       "hidden": false,
       "immutable": false,
-      "immutable_after_create": false
+      "immutable_after_create": false,
+      "regex": "(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)$",
+      "regexdesc": "Enter a valid base64 encoded text. Base64 encoded text contains alphanumeric characters and equals symbol as padding."
     },
     {
       "name": "vpcname",
       "label": "VPC Name",
-      "description": "Vpcname",
+      "description": "AWS VPC Name prefix. This value is used to create the VPC for ICP nodes.",
       "type": "string",
       "default": "icp-vpc",
       "group_name": "Networking",
@@ -217,8 +219,8 @@
     },
     {
       "name": "cidr",
-      "label": "Cidr",
-      "description": "Cidr",
+      "label": "CIDR",
+      "description": "AWS VPC CIDR block. This value is used to create the VPC for ICP nodes.",
       "type": "string",
       "default": "10.10.0.0/16",
       "group_name": "Networking",
@@ -231,7 +233,7 @@
     {
       "name": "subnetname",
       "label": "Subnet Name",
-      "description": "Subnet Name",
+      "description": "Subnet name prefix of public and private subnets for ICP nodes.",
       "type": "string",
       "default": "icp-subnet",
       "group_name": "Networking",
@@ -243,8 +245,8 @@
     },
     {
       "name": "subnet_cidrs",
-      "label": "Subnet Cidrs",
-      "description": "List of subnet CIDRs",
+      "label": "Private Subnet CIDRs",
+      "description": "List of subnet CIDRs. Total number of CIDR entry must match the number of availability zone provided above. A CIDR value is used in the creation of a private subnet in an availability zone for the worker nodes.",
       "type": "list",
       "default": [
         "10.10.10.0/24",
@@ -260,8 +262,8 @@
     },
     {
       "name": "pub_subnet_cidrs",
-      "label": "Pub Subnet Cidrs",
-      "description": "List of subnet CIDRs",
+      "label": "Public Subnet CIDRs",
+      "description": "List of subnet CIDRs. Total number of CIDR entry must match the number of availability zone provided above. A CIDR value is used in the creation of a public subnet in an availability zone for the proxy and management nodes.",
       "type": "list",
       "default": [
         "10.10.20.0/24",
@@ -278,7 +280,7 @@
     {
       "name": "private_domain",
       "label": "Private Domain",
-      "description": "Private Domain",
+      "description": "Private domain name that is used to create route53 name.",
       "type": "string",
       "default": "icp-cluster.icp",
       "group_name": "Globals",
@@ -291,7 +293,7 @@
     {
       "name": "ami",
       "label": "Amazon Machine Image (AMI-ID)",
-      "description": "Ami",
+      "description": "Default Amazon Machine Image ID that will be used if AMI ID for individual node is not provided.",
       "type": "string",
       "group_name": "Globals",
       "options": [
@@ -321,8 +323,8 @@
     },
     {
       "name": "bastion",
-      "label": "Bastion",
-      "description": "Bastion host used for debugging",
+      "label": "Bastion Node",
+      "description": "Bastion host that you can use to ssh into ICP cluster nodes. Can be used for debugging purpose.",
       "type": "map",
       "default": {
         "nodes": "1",
@@ -339,8 +341,8 @@
     },
     {
       "name": "master",
-      "label": "Master",
-      "description": "Master",
+      "label": "Master Node",
+      "description": "Master node details.",
       "type": "map",
       "default": {
         "nodes": "3",
@@ -359,8 +361,8 @@
     },
     {
       "name": "proxy",
-      "label": "Proxy",
-      "description": "Proxy",
+      "label": "Proxy Node",
+      "description": "Proxy node details.",
       "type": "map",
       "default": {
         "nodes": "3",
@@ -379,8 +381,8 @@
     },
     {
       "name": "management",
-      "label": "Management",
-      "description": "Management",
+      "label": "Management Node",
+      "description": "Management node details.",
       "type": "map",
       "default": {
         "nodes": "3",
@@ -399,8 +401,8 @@
     },
     {
       "name": "worker",
-      "label": "Worker",
-      "description": "Worker",
+      "label": "Worker Node",
+      "description": "Worker node details.",
       "type": "map",
       "default": {
         "nodes": "3",
@@ -419,8 +421,8 @@
     },
     {
       "name": "va",
-      "label": "Va",
-      "description": "Va",
+      "label": "Vulnerability Advisor Node",
+      "description": "Vulnerability Advisor node details.",
       "type": "map",
       "default": {
         "nodes": "3",
@@ -439,8 +441,8 @@
     },
     {
       "name": "instance_name",
-      "label": "Instance Name",
-      "description": "Instance Name",
+      "label": "Cluster Name",
+      "description": "ICP Cluster Name",
       "type": "string",
       "default": "icp",
       "group_name": "Globals",
@@ -453,10 +455,10 @@
     {
       "name": "icppassword",
       "label": "ICP Password",
-      "description": "ICP Password",
+      "description": "ICP user password",
       "type": "password",
       "group_name": "Globals",
-      "required": true,
+      "required": false,
       "secured": true,
       "hidden": false,
       "immutable": false,
@@ -465,7 +467,7 @@
     {
       "name": "docker_package_location",
       "label": "Docker Package Location",
-      "description": "When installing ICP EE on RedHat. Prefix location string with http: or nfs: to indicate protocol ",
+      "description": "Docker package location is required when installing ICP EE on RedHat. Prefix the location string with protocol. Example http:// or nfs://. ",
       "type": "string",
       "group_name": "Globals",
       "required": false,
@@ -476,8 +478,8 @@
     },
     {
       "name": "image_location",
-      "label": "Image Location",
-      "description": "Image location when installing EnterPrise edition. prefix location string with http: or nfs: to indicate protocol",
+      "label": "ICP EE Image Location",
+      "description": "Image location of ICP EE. Prefix the location string with protocol Example: s3://, http:// or nfs://.",
       "type": "string",
       "group_name": "Globals",
       "required": true,
@@ -488,7 +490,7 @@
     },
     {
       "name": "icp_inception_image",
-      "label": "Icp Inception Image",
+      "label": "ICP Inception Image",
       "description": "icp-inception bootstrap image repository",
       "type": "string",
       "default": "ibmcom/icp-inception-amd64:3.1.1-ee",
@@ -503,8 +505,8 @@
   "template_output_params": [
     {
       "name": "ICP_Console_ELB_DNS",
-      "label": "Icp Console Elb Dns ( Internal )",
-      "description": "Icp Console Elb Dns ( Internal )",
+      "label": "ICP Console ELB DNS ( Internal )",
+      "description": "ICP Console ELB DNS ( Internal )",
       "group_name": "",
       "secured": false,
       "hidden": false,
@@ -513,8 +515,8 @@
     },
     {
       "name": "ICP_Proxy_ELB_DNS_internal",
-      "label": "Icp Proxy Elb Dns ( Internal )",
-      "description": "Icp Proxy Elb Dns ( Internal )",
+      "label": "ICP Proxy Elb DNS ( Internal )",
+      "description": "ICP Proxy ELB DNS ( Internal )",
       "group_name": "",
       "secured": false,
       "hidden": false,
@@ -523,8 +525,8 @@
     },
     {
       "name": "ICP_Console_URL",
-      "label": "Icp Console Url",
-      "description": "Icp Console Url",
+      "label": "ICP Console URL",
+      "description": "ICP Console URL",
       "group_name": "",
       "secured": false,
       "hidden": false,
@@ -533,8 +535,8 @@
     },
     {
       "name": "ICP_Registry_ELB_URL",
-      "label": "Icp Registry Elb Url",
-      "description": "Icp Registry Elb Url",
+      "label": "ICP Registry ELB URL",
+      "description": "ICP Registry ELB URL",
       "group_name": "",
       "secured": false,
       "hidden": false,
@@ -543,8 +545,8 @@
     },
     {
       "name": "ICP_Kubernetes_API_URL",
-      "label": "Icp Kubernetes Api Url",
-      "description": "Icp Kubernetes Api Url",
+      "label": "ICP Kubernetes API URL",
+      "description": "ICP Kubernetes API URL",
       "group_name": "",
       "secured": false,
       "hidden": false,
@@ -553,8 +555,8 @@
     },
     {
       "name": "ICP_Admin_Username",
-      "label": "Icp Admin Username",
-      "description": "Icp Admin Username",
+      "label": "ICP Admin Username",
+      "description": "ICP Admin Username",
       "group_name": "",
       "secured": false,
       "hidden": false,
@@ -563,18 +565,18 @@
     },
     {
       "name": "ICP_Admin_Password",
-      "label": "Icp Admin Password",
-      "description": "Icp Admin Password",
+      "label": "ICP Admin Password",
+      "description": "ICP Admin Password",
       "group_name": "",
-      "secured": false,
+      "secured": true,
       "hidden": false,
       "shortname": "",
-      "type": "string"
+      "type": "password"
     },
     {
       "name": "bootmaster",
-      "label": "Bootmaster",
-      "description": "Bootmaster",
+      "label": "Bootmaster Host IP",
+      "description": "Bootmaster Host IP address",
       "group_name": "",
       "secured": false,
       "hidden": false,
@@ -610,6 +612,16 @@
       "hidden": false,
       "shortname": "",
       "type": "string"
-    }    
+    },
+    {
+      "name": "connection_name",
+      "label": "ICP Cloud Connection Name",
+      "description": "ICP cloud connection name that can be used in other templates to connect to ICP cluster.",
+      "type": "string",
+      "group_name": "",
+      "default": "icp",
+      "secured": false,
+      "hidden": false
+    }        
   ]
 }

@@ -56,7 +56,7 @@ ansible_user: icpdeploy
 ansible_become: true
 network_cidr: ${var.icp_network_cidr}
 service_cluster_ip_range: ${var.icp_service_network_cidr}
-default_admin_password: ${var.icppassword}
+default_admin_password: ${local.icppassword}
 proxy_lb_address: ${aws_lb.icp-proxy.dns_name}
 cluster_lb_address: ${aws_lb.icp-console.dns_name}
 cluster_CA_domain: ${var.user_provided_cert_dns != "" ? var.user_provided_cert_dns : aws_lb.icp-console.dns_name}
@@ -109,6 +109,11 @@ output "ICP_Admin_Username" {
 }
 
 output "ICP_Admin_Password" {
-  value = "${var.icppassword}"
+  value = "${local.icppassword}"
 }
+
+output "connection_name"{
+	value = "${var.instance_name}${random_id.clusterid.hex}" 
+}
+
 
