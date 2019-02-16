@@ -196,6 +196,20 @@ variable "enable_autoscaling" {
   default = false
 }
 
+variable "allowed_cidr_master_443" {
+  type = "list"
+  default = [
+    "0.0.0.0/0"
+  ]
+}
+
+variable "allowed_cidr_master_80" {
+  type = "list"
+  default = [
+    "0.0.0.0/0"
+  ]
+}
+
 variable "allowed_cidr_master_8001" {
   type = "list"
   default = [

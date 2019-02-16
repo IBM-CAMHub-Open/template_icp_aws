@@ -38,3 +38,19 @@ function parse_icpversion() {
     tag=$1
   fi
 }
+
+##
+#Function to check if docker run is successful
+##
+function check_container(){
+	if [ $1 -ne 0 ]
+	then
+		echo $2
+		##
+		#File to indicate failure of ICP install. Can be used
+		#to monitor the completion using terrafrom null_resource.
+		##
+		touch /opt/ibm/cluster/icp_install_failed
+		exit 1
+	fi
+}	

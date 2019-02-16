@@ -546,6 +546,16 @@
       "type": "url"
     },
     {
+      "name": "icp_klusterlet_dns",
+      "label": "Host Name for klusterlet ingress rule",
+      "description": "Use this host name in the klusterlet ingress rule.",
+      "group_name": "",
+      "secured": false,
+      "hidden": false,
+      "shortname": "",
+      "type": "string"
+    },    
+    {
       "name": "ICP_Kubernetes_API_URL",
       "label": "ICP Kubernetes API URL",
       "description": "ICP Kubernetes API URL",

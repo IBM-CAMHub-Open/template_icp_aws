@@ -93,6 +93,10 @@ output "ICP_Proxy_ELB_DNS_internal" {
   value = "${aws_lb.icp-proxy.dns_name}"
 }
 
+output "icp_klusterlet_dns" {
+  value = "${aws_lb.icp-klusterlet.dns_name}"
+}
+
 output "ICP_Console_URL" {
   value = "https://${var.user_provided_cert_dns != "" ? var.user_provided_cert_dns : aws_lb.icp-console.dns_name}:8443"
 }

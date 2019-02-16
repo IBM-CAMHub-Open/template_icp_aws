@@ -45,7 +45,8 @@ docker run \
   -e LICENSE=accept \
   -v /opt/ibm:/data ${inception_image} \
   cp -r cluster /data
-
+container_ret=$?
+check_container $container_ret "Docker run command to create cluster directory failed"
 # pull down the config items
 ${awscli} s3 cp s3://${s3_config_bucket}/hosts /opt/ibm/cluster/hosts
 #${awscli} s3 cp s3://${s3_config_bucket}/cfc-certs /opt/ibm/cluster/cfc-certs
@@ -135,7 +136,8 @@ docker run \
   -b \
   -m wait_for \
   -a "path=/var/lib/cloud/instance/boot-finished timeout=18000"
-
+container_ret=$?
+check_container $container_ret "Docker run command wait for all hosts in the cluster to finish cloud-init failed"
 # kick off the installer
 docker run \
   -e LICENSE=accept \
@@ -144,7 +146,8 @@ docker run \
   -v /opt/ibm/cluster:/installer/cluster \
   ${inception_image} \
   install
-
+container_ret=$?
+check_container $container_ret "Docker run command to install ICP failed"
 # if additional post-install scripts specified, run the scripts through the installer now
 for script in ${s3_patch_scripts}; do
   echo "Executing post-install patch script ${script} ..."
@@ -152,6 +155,8 @@ for script in ${s3_patch_scripts}; do
   ${awscli} s3 cp ${script} /opt/ibm/cluster/${script_name}
   chmod +x /opt/ibm/cluster/${script_name}
   docker run -e LICENSE=accept -t --net=host -v /opt/ibm/cluster:/installer/cluster ${inception_image} ./cluster/${script_name}
+  container_ret=$?
+  check_container $container_ret "Docker run command to execute post-install scripts failed"  
   rm -f /opt/ibm/cluster/${script_name}
 done
 ##

@@ -241,16 +241,22 @@ resource "null_resource" "wait_for_icp"{
 password=${local.icppassword}
 while true
 do
-file="/opt/ibm/cluster/icp_install_completed"
-if [ -f "$file" ]
+success_file="/opt/ibm/cluster/icp_install_completed"
+failure_file="/opt/ibm/cluster/icp_install_failed"
+if [ -f "$success_file" ] || [ -f "$failure_file" ]
 then
-echo "ICP deployment completed ..."
+echo "ICP install script execution completed."
 break
 else
 echo "Wait for ICP deployment to be completed ..."
 sleep 120
 fi
 done 
+if [ -f "$failure_file" ]
+then
+echo "ICP deployment failed. Check /opt/ibm/cluster/logs in the boot master for more details."
+exit 1
+else
 while true
 do
 response=`curl -s -o /dev/null -I -w "%{http_code}" -k https://${var.user_provided_cert_dns != "" ? var.user_provided_cert_dns : aws_lb.icp-console.dns_name}:8443/oidc/login.jsp`
@@ -274,7 +280,8 @@ else
 echo "Prerequisite check failed. Wait for ICP to be available ..."
 sleep 120
 fi
-done  
+done
+fi  
 EOF
   }  
   # Execute the script remotely
@@ -284,6 +291,43 @@ EOF
       "bash -c 'sudo ./verify_icp_install.sh'"
     ]
   }  
+}
+
+##
+#Update master /etc/hosts file with klusterlet LB DNS
+##
+resource "null_resource" "add_klusterlet_dns_to_hosts"{
+  depends_on = [
+    "null_resource.wait_for_icp",
+	"aws_lb.icp-klusterlet"
+  ]
+  count         = "${var.master["nodes"]}"
+  # Specify the ssh connection
+  connection {
+  	type				= "ssh"
+    user 				= "icpdeploy"
+    host				= "${element(aws_instance.icpmaster.*.private_ip, count.index)}"
+    private_key 		= "${tls_private_key.installkey.private_key_pem}"
+    bastion_host        = "${element(aws_instance.bastion.*.public_ip, count.index)}"
+    bastion_user        = "ubuntu"
+    bastion_private_key = "${base64decode(var.privatekey)}"
+    bastion_port        = "22"
+  }  
+  
+  provisioner "file" {
+    destination = "update_hosts_file.sh"
+    content = <<EOF
+#!/bin/bash  
+sudo echo ${element(aws_instance.icpmaster.*.private_ip, count.index)} ${aws_lb.icp-klusterlet.dns_name} >> /etc/hosts
+EOF
+  }  
+  # Execute the script remotely
+  provisioner "remote-exec" {
+    inline = [
+      "bash -c 'sudo chmod +x update_hosts_file.sh'",
+      "bash -c 'sudo ./update_hosts_file.sh'"
+    ]
+  } 
 }
 
 resource "aws_instance" "icpproxy" {
