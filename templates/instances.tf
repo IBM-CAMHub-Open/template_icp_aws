@@ -293,43 +293,6 @@ EOF
   }  
 }
 
-##
-#Update master /etc/hosts file with klusterlet LB DNS
-##
-resource "null_resource" "add_klusterlet_dns_to_hosts"{
-  depends_on = [
-    "null_resource.wait_for_icp",
-	"aws_lb.icp-klusterlet"
-  ]
-  count         = "${var.master["nodes"]}"
-  # Specify the ssh connection
-  connection {
-  	type				= "ssh"
-    user 				= "icpdeploy"
-    host				= "${element(aws_instance.icpmaster.*.private_ip, count.index)}"
-    private_key 		= "${tls_private_key.installkey.private_key_pem}"
-    bastion_host        = "${element(aws_instance.bastion.*.public_ip, count.index)}"
-    bastion_user        = "ubuntu"
-    bastion_private_key = "${base64decode(var.privatekey)}"
-    bastion_port        = "22"
-  }  
-  
-  provisioner "file" {
-    destination = "update_hosts_file.sh"
-    content = <<EOF
-#!/bin/bash  
-sudo echo ${element(aws_instance.icpmaster.*.private_ip, count.index)} ${aws_lb.icp-klusterlet.dns_name} >> /etc/hosts
-EOF
-  }  
-  # Execute the script remotely
-  provisioner "remote-exec" {
-    inline = [
-      "bash -c 'sudo chmod +x update_hosts_file.sh'",
-      "bash -c 'sudo ./update_hosts_file.sh'"
-    ]
-  } 
-}
-
 resource "aws_instance" "icpproxy" {
   depends_on = [
     "aws_route_table_association.a",

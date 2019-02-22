@@ -131,52 +131,6 @@ resource "aws_security_group_rule" "proxy-egress" {
   security_group_id = "${aws_security_group.proxy.id}"
 }
 
-resource "aws_security_group_rule" "master-443-ngw" {
-    count = "${length(var.azs)}"
-    type = "ingress"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["${element(aws_eip.icp_ngw_eip.*.public_ip, count.index)}/32"]
-    security_group_id = "${aws_security_group.master.id}"
-    description = "allow nginx klusterlet endpoint over the nat gateway"
-}
-
-resource "aws_security_group_rule" "master-443-ingress" {
-  count = "${length(var.allowed_cidr_master_443)}"
-  type = "ingress"
-  from_port   = 443
-  to_port     = 443
-  protocol    = "tcp"
-  cidr_blocks = [
-    "${element(var.allowed_cidr_master_443, count.index)}"
-  ]
-  security_group_id = "${aws_security_group.master.id}"
-}
-
-resource "aws_security_group_rule" "master-80-ngw" {
-    count = "${length(var.azs)}"
-    type = "ingress"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["${element(aws_eip.icp_ngw_eip.*.public_ip, count.index)}/32"]
-    security_group_id = "${aws_security_group.master.id}"
-    description = "allow nginx klusterlet endpoint over the nat gateway"
-}
-
-resource "aws_security_group_rule" "master-80-ingress" {
-  count = "${length(var.allowed_cidr_master_80)}"
-  type = "ingress"
-  from_port   = 80
-  to_port     = 80
-  protocol    = "tcp"
-  cidr_blocks = [
-    "${element(var.allowed_cidr_master_80, count.index)}"
-  ]
-  security_group_id = "${aws_security_group.master.id}"
-}
-
 resource "aws_security_group_rule" "master-8443-ngw" {
     count = "${length(var.azs)}"
     type = "ingress"
