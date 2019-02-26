@@ -1,13 +1,12 @@
-# Terraform Highly Available ICP Deployment on AWS
+# Highly Available ICP Deployment on AWS
 
 This Terraform configurations uses the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) to provision virtual machines on AWS to prepare VMs and deploy [IBM Cloud Private](https://www.ibm.com/cloud-computing/products/ibm-cloud-private/) on them.  This Terraform template automates best practices learned from installing ICP on AWS at numerous client sites in production.
 
-This template (on the [`master` branch](https://github.com/ibm-cloud-architecture/terraform-icp-aws/tree/master)) provisions a highly-available cluster with ICP 3.1.0 Enterprise Edition.
-
-We have also verified with ICP 2.1.0.3 Enterprise Edition with Fixpack 1 applied, with the templates available on the [`2.1.X` branch](https://github.com/ibm-cloud-architecture/terraform-icp-aws/tree/2.1.X).  For ICP 2.1.0.3 EE Fixpack release notes, follow [this link](https://www.ibm.com/support/knowledgecenter/SSBS6K_2.1.0.3/getting_started/fix_pack1.html).
+This [template](https://github.com/IBM-CAMHub-Open/template_icp_aws/tree/master/templates) provisions a highly-available cluster with ICP 3.1.1 Enterprise Edition. This template can be executed either using [Terraform Automation](https://www.terraform.io/) or using [IBM Cloud Automation Manager](https://www.ibm.com/support/knowledgecenter/en/SS2L37/product_welcome_cloud_automation_manager.html).
 
 * [Infrastructure Architecture](#infrastructure-architecture)
-* [Terraform Automation](#terraform-automation)
+* [Executing the template using Terraform Automation](#executing-the-template-using-terraform-automation)
+* [Executing the template using IBM Cloud Automation Manager](#executing-the-template-using-ibm-cloud-automation-manager)
 * [Installation Procedure](#installation-procedure)
 * [Community Edition](#installation-procedure-community-edition)
 * [Cluster access](#cluster-access)
@@ -18,11 +17,13 @@ The following diagram outlines the infrastructure architecture.
 
   ![Infrastructure Architecture](imgs/icp_ha_aw_overview.png?raw=true)
 
-In a single availability zone, we divide the network into a public subnet which is directly connected to the internet, and a private subnet that can reach the internet through the NAT gateway:
+Within an availability zone, there is a public subnet which is directly connected to the internet, and a private subnet that can reach the internet through the NAT gateway:
 
   ![Single Availability Zone Infrastructure](imgs/icp_ha_aws_single_az.png?raw=true)
 
-## Terraform Automation
+## Executing the template using Terraform Automation
+
+The following sections explains how this terraform template works, the required template input values, how to execute the template using terraform and the objects it creates in Amazon Cloud.
 
 ### Prerequisites
 
@@ -36,17 +37,11 @@ In a single availability zone, we divide the network into a public subnet which 
 
 1. Create an S3 bucket in the same region that the ICP cluster will be created and upload the ICP binaries.  Make note of the bucket name.  You can use the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/awscli-install-bundle.html) to do this.  
 
-  For ICP 3.1.0-EE, you will need to copy the following:
-  - the ICP binary package tarball (`ibm-cloud-private-x86_64-3.1.0.tar`)
+  For ICP 3.1.1-EE, you will need to copy the following:
+  - the ICP binary package tarball (`ibm-cloud-private-x86_64-3.1.1.tar.gz`)
   - ICP Docker package (`icp-docker-18.03.1_x86_64`)
 
-   For ICP 2.1.0.3-EE, you will need to copy the following:
-   - the ICP binary package tarball (`ibm-cloud-private-x86_64-2.1.0.3.tar.gz`)
-   - ICP Docker package (`icp-docker-17.12.1_x86_64.bin`)
-   - The ICP patched installer image (`icp-inception-amd64-2.1.0.3-fp1.tar`)
-   - The ICP 2.1.0.3 Fixpack 1 script (`ibm-cloud-private-2.1.0.3-fp1.sh`)
-
-   The ICP patched installer image and Fixpack 1 script can be acquired from [IBM Fix Central](https://www.ibm.com/support/fixcentral/).  
+   The ICP patched installer image and fixpack script can be acquired from [IBM Fix Central](https://www.ibm.com/support/fixcentral/).  
 
 2. Create a file, `terraform.tfvars` containing the values for the following:
 
@@ -57,16 +52,16 @@ In a single availability zone, we divide the network into a public subnet which 
 | `key_name`     | yes          | AWS keypair name to assign to instances     |
 | `ami` | no | Base AMI to use for all EC2 instances.  If none provided, will search for latest version of RHEL 7.5 |
 | `docker_package_location` | no         | S3 URL of the ICP docker package for RHEL (e.g. `s3://<bucket>/<filename>`). Ubuntu will use `docker-ce` from the [Docker apt repository](https://docs.docker.com/install/linux/docker-ce/ubuntu/).  If Docker is already installed in the base AMI, this step will be skipped. |
-| `image_location` | no         | S3 URL of the ICP binary package (e.g. `s3://<bucket>/ibm-cloud-private-x86_64-2.1.0.3.tar.gz`).  Can also be a local path, e.g. `./icp-install/ibm-cloud-private-x86_64-2.1.0.3.tar.gz`; in this case the Terraform automation will create an S3 bucket and upload the binary package.  If provided, the automation will download the binaries from S3 and perform a `docker load` on every instance.  Note that it is faster to create an instance, install docker, perform the `docker load`, and convert to an AMI for use as a base instance for all node role types, as loading docker images takes around 20 minutes per EC2 instance. If the installer image is already on the EC2 instance, this step is skipped. |
+| `image_location` | no         | S3 URL of the ICP binary package (e.g. `s3://<bucket>/ibm-cloud-private-x86_64-3.1.1.tar.gz`).  Can also be a local path, e.g. `./icp-install/ibm-cloud-private-x86_64-3.1.1.tar.gz`; in this case the Terraform automation will create an S3 bucket and upload the binary package.  If provided, the automation will download the binaries from S3 and perform a `docker load` on every instance.  Note that it is faster to create an instance, install docker, perform the `docker load`, and convert to an AMI for use as a base instance for all node role types, as loading docker images takes around 20 minutes per EC2 instance. If the installer image is already on the EC2 instance, this step is skipped. |
 | `patch_images` | no         | A list of S3 URLs for the images to load to each ICP node before installation.  For example, for ICP 2.1.0.3 fixpack 1, this would be `[ "s3://<bucket>/icp-inception-amd64.2.1.0.3.fp1.tar" ]`.  If provided, the automation will download these additional binaries from S3 and perform a `docker load` on every EC2 instance in the ICP cluster. |
 | `patch_scripts` | no         | A list of S3 URLs for the patch scripts to execute after installation completed.  For example, for ICP 2.1.0.3 fixpack 1, this would be `[ "s3://<bucket>/ibm-cloud-private-2.1.0.3-fp1.sh" ]`.  If provided, the automation will download these additional scripts from S3 and execute them in order through the `icp-inception` image as post-install commands. |
-| `icp_inception_image` | no | Name of the bootstrap installation image.  By default it uses `ibmcom/icp-inception:2.1.0.2-ee` to indicate 2.1.0.2 EE, but this will vary in each release.  For ICP 2.1.0.3 EE, you must use the patched installation image `ibmcom/icp-inception:2.1.0.3-ee-fp1`.  You can also install ICP Community edition by specifying `ibmcom/icp-inception:2.1.0.2` for example, |
+| `icp_inception_image` | no | Name of the bootstrap installation image.  By default it uses `ibmcom/icp-inception-amd64:3.1.1-ee` to indicate 3.1.1 EE, but this will vary in each release.|
 | `existing_iam_instance_profile_name` | no | If an IAM role is created beforehand, will assign the role with this name to all EC2 instances. See section on IAM roles for more information on the required policies. If blank, will attempt to create an IAM role.|
 | `user_provided_cert_dns` | no | The DNS name in a user-provided TLS certificate, if provided |
 
 See [Terraform documentation](https://www.terraform.io/intro/getting-started/variables.html) for the format of this file.
 
-5. If using a user-provided TLS certificate containing a custom DNS name, copy `icp-auth.crt` and `icp-auth.key` to this directory before installation to the `cfc-certs` directory.  See [documentation](https://www.ibm.com/support/knowledgecenter/en/SSBS6K_2.1.0/installing/create_ca_cert.html) for more details.  The certificate should contain the `user_provided_cert_dns` as a common name, and the DNS entry corresponding should be a CNAME pointing at the created ELB DNS entry for the master console.
+5. If using a user-provided TLS certificate containing a custom DNS name, copy `icp-auth.crt` and `icp-auth.key` to this directory before installation to the `cfc-certs` directory.  See [documentation](https://www.ibm.com/support/knowledgecenter/en/SSBS6K_3.1.1/installing/create_ca_cert.html) for more details.  The certificate should contain the `user_provided_cert_dns` as a common name, and the DNS entry corresponding should be a CNAME pointing at the created ELB DNS entry for the master console.
 
 6. Provide AWS credentials using environment variables:
 
@@ -75,7 +70,7 @@ See [Terraform documentation](https://www.terraform.io/intro/getting-started/var
    export AWS_SECRET_ACCESS_KEY=BAzxcvq^.asdgaljlajdfl235bads
    ```
 
-7. Initialize Terraform using this command.  This will download all dependent modules, including the [ICP installation module](https://github.com/ibm-cloud-architecture/terraform-module-icp-deploy).
+7. Initialize Terraform using this command.
 
    ```bash
    terraform init
@@ -214,7 +209,10 @@ Note that the below are the defaults, and each security group can have its white
 - Network LoadBalancer for ICP Ingress resources
   - listen on port 80, forward to proxy nodes port 80 (http)
   - listen on port 443, forward to proxy nodes port 443 (https)
-
+- Network LoadBalancer for IBM Multicloud Manager Klusterlet Prometheus Ingress resources. A separate load balancer is required for ssl-passthrough configuration.
+  - listen on port 80, forward to proxy nodes port 80 (http)
+  - listen on port 443, forward to proxy nodes port 443 (https)
+  
 #### Route53 DNS Zone
 
 For convenience, a private DNS Zone is created in Route 53.  The domain name can be configured in `variables.tf`; by default it is `<clusterid>.icpcluster.icp`.  The domain search suffixes are added to `resolv.conf`, but due to a bug in cloud-init, `resolv.conf` is overwritten by NetworkManager in RHEL. It should be resolved in a future release of cloud-init.
@@ -226,9 +224,80 @@ For convenience, a private DNS Zone is created in Route 53.  The domain name can
 3. An S3 bucket is created for ICP image registry storage.
 
 
+## Executing the template using IBM Cloud Automation Manager
+
+The following sections describe how to execute this template using [IBM Cloud Automation Manager](https://www.ibm.com/support/knowledgecenter/en/SS2L37/product_welcome_cloud_automation_manager.html).
+
+In your IBM Cloud Automation Manager navigate to Library > Templates > Starterpack > IBM Cloud Private highly-available cluster in AWS and select Deploy operation. Fill the following input parameters and deploy the template.
+
+For High Available ICP deployment there must be atleast 3 master, 3 proxy, 3 management and 3 worker node. You must use a region with atleast 3 availability zone. You must also specify atleast 3 private and public subnet CIDRs.
+
+### Input Variables
+
+#### Globals
+
+| Parameter | Default Value | Description |
+| :-------------- |:--------------| :-----|
+| AWS Region | us-east-1 | AWS region to deploy your ICP cluster nodes. For an HA installation, the AWS selected region should have at least 3 availability zones. |
+| Availability Zones | ["a","b","c"] | The availability zone letter identifier in the above selected region. For high availability should have at least 3 availability zones. Setting to a single availability zone will disable high availability and not provision EFS, in this case, reduce the number of master and proxy nodes to 1 |
+| Key Name |  | Name of the EC2 key pair. |
+| Private Key |  | Base64 encoded private key file contents of the EC2 key pair. |
+| VPC Name | icp-vpc | AWS VPC Name prefix. This value is used to prefix the VPC created for ICP nodes. |
+| Amazon Machine Image (AMI-ID) | ami-0f9cf087c1f27d9b1 | Default Amazon Machine Image ID that will be used if AMI ID for individual node is not provided. |
+| Bastion Node | {"nodes":"1","type":"t2.micro","ami":"ami-0f9cf087c1f27d9b1","disk":"10"} | Bastion host that you can use to ssh into ICP cluster nodes. Can be used for debugging purpose. |
+| Master Node | {"nodes":"3","type":"m4.2xlarge","ami":"ami-0f9cf087c1f27d9b1","disk":"300","docker_vol":"100","ebs_optimized":true} | Master node details. Each master node will be created in a different AZS. Number of AZS, public subnet and private subnet must match the number of master node. |
+| Proxy Node | {"nodes":"3","type":"m4.xlarge","ami":"ami-0f9cf087c1f27d9b1","disk":"150","docker_vol":"100","ebs_optimized":true} | Proxy node details. Each proxy node will be created in a different AZS. Number of AZS, public subnet and private subnet must match the number of proxy node. |
+| Management Node | {"nodes":"3","type":"m4.2xlarge","ami":"ami-0f9cf087c1f27d9b1","disk":"300","docker_vol":"100","ebs_optimized":true} | Management node details. Each management node will be created in a different AZS. Number of AZS, public subnet and private subnet must match the number of management node. |
+| Worker Node | {"nodes":"3","type":"m4.2xlarge","ami":"ami-0f9cf087c1f27d9b1","disk":"150","docker_vol":"100","ebs_optimized":true} | Worker node details. Each worker node will be created in a different AZS. Number of AZS, public subnet and private subnet must match the number of worker node. |
+| Vulnerability Advisor Node | {"nodes":"3","type":"m4.2xlarge","ami":"ami-0f9cf087c1f27d9b1","disk":"300","docker_vol":"100","ebs_optimized":true} | Vulnerability Advisor node details. Each VA node will be created in a different AZS. Number of AZS, public subnet and private subnet must match the number of VA node. |
+| Cluster Name | icp | ICP Cluster Name |
+| ICP Password |  | ICP user password |
+| Docker Package Location |  | Docker package location is required when installing ICP EE on RedHat. Prefix the location string with protocol. Example s3://, http:// or nfs://.  |
+| ICP EE Image Location |  | Image location of ICP EE. Prefix the location string with protocol Example: s3://, http:// or nfs://. |
+| ICP Inception Image | ibmcom/icp-inception-amd64:3.1.1-ee | Name of the bootstrap installation image. |
+
+#### Networking
+
+| Parameter | Default Value | Description |
+| :-------------- |:--------------| :-----|
+| VPC CIDR block | 10.10.0.0/16 | AWS VPC CIDR block. This is the primary CIDR block for your ICP node VPC. |
+| Subnet Name | icp-subnet | Subnet name prefix for public and private subnets used by ICP nodes. |
+| Private Subnet CIDRs | ["10.10.10.0/24","10.10.11.0/24","10.10.12.0/24"] | List of subnet CIDRs. Total number of CIDR entry must match the number of availability zone provided above. A CIDR value is used in the creation of a private subnet in an availability zone for the worker nodes. |
+| Public Subnet CIDRs | ["10.10.20.0/24","10.10.21.0/24","10.10.22.0/24"] | List of subnet CIDRs. Total number of CIDR entry must match the number of availability zone provided above. A CIDR value is used in the creation of a public subnet in an availability zone for the proxy and management nodes. |
+| Private Domain | icp-cluster.icp | Private domain name that is used to create route53 name. |
+
+The following output variables are exposed by IBM Cloud Automation Manager, that can be used to access the ICP Console or to log into bastion or boot master node or in service composition like [ICP cluster with klusterlet on Amazon EC2](https://github.com/IBM-CAMHub-Open/servicelibrary/tree/master/Services/ICP/ICP_on_AmazonEC2/ICP_cluster_and_MCM_Klusterlet).
+
+### Output Variables
+
+| Parameter | Description |
+| :-------------- | :-----|
+| Bastion Host IP | Bastion Host IP address. |
+| Cluster CA Domain | Cluster Certification Authority Domain address. |
+| Bootmaster Host IP | Bootmaster Host IP address |
+| ICP Cloud Connection Name | ICP cloud connection name that can be used in other templates to connect to ICP cluster. |
+| ICP Admin Password | ICP Admin Password |
+| ICP Admin Username | ICP Admin Username |
+| ICP Console ELB DNS ( Internal ) | ICP Console ELB DNS ( Internal ) |
+| ICP Proxy Elb DNS ( Internal ) | ICP Proxy Elb DNS ( Internal ) |
+| ICP Console URL | ICP Console URL |
+| ICP Registry ELB URL | ICP Registry ELB URL |
+| Host Name for klusterlet ingress rule | Use this host name as input to the klusterlet Prometheus ingress hostname. |
+| ICP Kubernetes API URL | ICP Kubernetes API URL |
+| Boot Master Node User Private SSH Key (base64 encoded) | Private SSH key to use while configuring the IBM Cloud Private Boot Node (base64 encoded) |
+
+This template creates the following data objects that can be used in other templates like [IBM Multicloud Manager](https://github.com/IBM-CAMHub-Open/template_mcm_install) or in service composition like [ICP cluster with klusterlet on Amazon EC2](https://github.com/IBM-CAMHub-Open/servicelibrary/tree/master/Services/ICP/ICP_on_AmazonEC2/ICP_cluster_and_MCM_Klusterlet) 
+
+### Data objects created by this template
+
+| Data Object Type | Description |
+| :-------------- | :-----|
+| com.ibm.cloud.cloudconnections.ICP | ICP cloud connection name that can be used in other templates to connect to the created ICP cluster. |
+| bastionhost | Bastion host details that can be used in other templates to connect to boot master using bation host. |
+
 ## Installation Procedure
 
-The installer automates the install procedure described [here](https://www.ibm.com/support/knowledgecenter/en/SSBS6K_2.1.0/installing/installing.html).
+The installer automates the install procedure described [here](https://www.ibm.com/support/knowledgecenter/en/SSBS6K_3.1.1/installing/installing.html).
 
 ### ICP Installation Parameters on AWS
 
@@ -294,15 +363,15 @@ worker = {
 
 ### ICP Console access
 
-The ICP console can be accessed at `https://<cluster_lb_address>:8443`.  See [documentation](https://www.ibm.com/support/knowledgecenter/SSBS6K_2.1.0/manage_cluster/cfc_gui.html).
+The ICP console can be accessed at `https://<cluster_lb_address>:8443`.  See [documentation](https://www.ibm.com/support/knowledgecenter/SSBS6K_3.1.1/manage_cluster/cfc_gui.html).
 
 ### ICP Private Image Registry access
 
-The registry is available at `https://<cluster_lb_address>:8500`.  See [documentation](https://www.ibm.com/support/knowledgecenter/en/SSBS6K_2.1.0/manage_images/configuring_docker_cli.html) for how to configure Docker to access the registry.
+The registry is available at `https://<cluster_lb_address>:8500`.  See [documentation](https://www.ibm.com/support/knowledgecenter/en/SSBS6K_3.1.1/manage_images/configuring_docker_cli.html) for how to configure Docker to access the registry.
 
 ### ICP Kubernetes API access
 
-The Kubernetes API can be reached at `https://<cluster_lb_address>:8001`.  To obtain a token, see the [documentation](https://www.ibm.com/support/knowledgecenter/en/SSBS6K_2.1.0/manage_cluster/cfc_cli.html) or this [blog post](https://www.ibm.com/developerworks/community/blogs/fe25b4ef-ea6a-4d86-a629-6f87ccf4649e/entry/Configuring_the_Kubernetes_CLI_by_using_service_account_tokens1?lang=en),
+The Kubernetes API can be reached at `https://<cluster_lb_address>:8001`.  To obtain a token, see the [documentation](https://www.ibm.com/support/knowledgecenter/en/SSBS6K_3.1.1/manage_cluster/cfc_cli.html) or this [blog post](https://www.ibm.com/developerworks/community/blogs/fe25b4ef-ea6a-4d86-a629-6f87ccf4649e/entry/Configuring_the_Kubernetes_CLI_by_using_service_account_tokens1?lang=en),
 
 ### ICP Ingress Controller
 
@@ -311,3 +380,9 @@ The Kubernetes API can be reached at `https://<cluster_lb_address>:8001`.  To ob
 ## AWS Cloud Provider
 
 The AWS Cloud provider provides Kubernetes integration with Elastic Load Balancer and Elastic Block Store.  See documentation on [LoadBalancer](https://kubernetes.io/docs/concepts/cluster-administration/cloud-providers/#aws) and [Volume](https://kubernetes.io/docs/concepts/storage/storage-classes/#aws)
+
+### License and Maintainer
+
+Copyright IBM Corp. 2019
+
+Template Version - 3.1.1

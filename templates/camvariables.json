@@ -88,7 +88,7 @@
     {
       "name": "aws_region",
       "label": "AWS Region",
-      "description": "AWS region to deploy your ICP cluster nodes.",
+      "description": "AWS region to deploy your ICP cluster nodes. For an HA installation, the AWS selected region should have at least 3 availability zones.",
       "type": "string",
       "options": [
         {
@@ -163,7 +163,7 @@
     {
       "name": "azs",
       "label": "Availability Zones",
-      "description": "The availability zone letter identifier in the above selected region.",
+      "description": "The availability zone letter identifier in the above selected region. For high availability should have at least 3 availability zones. Setting to a single availability zone will disable high availability and not provision EFS, in this case, reduce the number of master and proxy nodes to 1",
       "type": "list",
       "default": [
         "a",
@@ -207,7 +207,7 @@
     {
       "name": "vpcname",
       "label": "VPC Name",
-      "description": "AWS VPC Name prefix. This value is used to create the VPC for ICP nodes.",
+      "description": "AWS VPC Name prefix. This value is used to prefix the VPC created for ICP nodes.",
       "type": "string",
       "default": "icp-vpc",
       "group_name": "Networking",
@@ -219,8 +219,8 @@
     },
     {
       "name": "cidr",
-      "label": "CIDR",
-      "description": "AWS VPC CIDR block. This value is used to create the VPC for ICP nodes.",
+      "label": "VPC CIDR block",
+      "description": "AWS VPC CIDR block. This is the primary CIDR block for your ICP node VPC.",
       "type": "string",
       "default": "10.10.0.0/16",
       "group_name": "Networking",
@@ -233,7 +233,7 @@
     {
       "name": "subnetname",
       "label": "Subnet Name",
-      "description": "Subnet name prefix of public and private subnets for ICP nodes.",
+      "description": "Subnet name prefix for public and private subnets used by ICP nodes.",
       "type": "string",
       "default": "icp-subnet",
       "group_name": "Networking",
@@ -342,7 +342,7 @@
     {
       "name": "master",
       "label": "Master Node",
-      "description": "Master node details.",
+      "description": "Master node details. Each master node will be created in a different AZS. Number of AZS, public subnet and private subnet must match the number of master node.",
       "type": "map",
       "default": {
         "nodes": "3",
@@ -362,7 +362,7 @@
     {
       "name": "proxy",
       "label": "Proxy Node",
-      "description": "Proxy node details.",
+      "description": "Proxy node details. Each proxy node will be created in a different AZS. Number of AZS, public subnet and private subnet must match the number of proxy node.",
       "type": "map",
       "default": {
         "nodes": "3",
@@ -382,7 +382,7 @@
     {
       "name": "management",
       "label": "Management Node",
-      "description": "Management node details.",
+      "description": "Management node details. Each management node will be created in a different AZS. Number of AZS, public subnet and private subnet must match the number of management node.",
       "type": "map",
       "default": {
         "nodes": "3",
@@ -402,7 +402,7 @@
     {
       "name": "worker",
       "label": "Worker Node",
-      "description": "Worker node details.",
+      "description": "Worker node details. Each worker node will be created in a different AZS. Number of AZS, public subnet and private subnet must match the number of worker node.",
       "type": "map",
       "default": {
         "nodes": "3",
@@ -422,7 +422,7 @@
     {
       "name": "va",
       "label": "Vulnerability Advisor Node",
-      "description": "Vulnerability Advisor node details.",
+      "description": "Vulnerability Advisor node details. Each VA node will be created in a different AZS. Number of AZS, public subnet and private subnet must match the number of VA node.",
       "type": "map",
       "default": {
         "nodes": "3",
@@ -469,7 +469,7 @@
     {
       "name": "docker_package_location",
       "label": "Docker Package Location",
-      "description": "Docker package location is required when installing ICP EE on RedHat. Prefix the location string with protocol. Example http:// or nfs://. ",
+      "description": "Docker package location is required when installing ICP EE on RedHat. Prefix the location string with protocol. Example s3://, http:// or nfs://. ",
       "type": "string",
       "group_name": "Globals",
       "required": false,
@@ -493,7 +493,7 @@
     {
       "name": "icp_inception_image",
       "label": "ICP Inception Image",
-      "description": "icp-inception bootstrap image repository",
+      "description": "Name of the bootstrap installation image.",
       "type": "string",
       "default": "ibmcom/icp-inception-amd64:3.1.1-ee",
       "group_name": "Globals",
@@ -547,8 +547,8 @@
     },
     {
       "name": "icp_klusterlet_dns",
-      "label": "Host Name for klusterlet ingress rule",
-      "description": "Use this host name in the klusterlet ingress rule.",
+      "label": "Host Name for klusterlet Prometheus ingress rule",
+      "description": "Use this host name as input to the klusterlet Prometheus ingress hostname.",
       "group_name": "",
       "secured": false,
       "hidden": false,
@@ -600,7 +600,7 @@
       "description": "Private SSH key to use while configuring the IBM Cloud Private Boot Node (base64 encoded)",
       "type": "string",
       "secured": false,
-      "label": "Boot Node User Private SSH Key (base64 encoded)",
+      "label": "Boot Master Node User Private SSH Key (base64 encoded)",
       "hidden": false,
       "group_name": "",
       "shortname": ""
