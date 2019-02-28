@@ -138,15 +138,25 @@ docker run \
   -a "path=/var/lib/cloud/instance/boot-finished timeout=18000"
 container_ret=$?
 check_container $container_ret "Docker run command wait for all hosts in the cluster to finish cloud-init failed"
-# kick off the installer
-docker run \
-  -e LICENSE=accept \
-  --net=host \
-  -t \
-  -v /opt/ibm/cluster:/installer/cluster \
-  ${inception_image} \
-  install
-container_ret=$?
+for count in {1..5} 
+do
+	# kick off the installer
+	docker run \
+  	-e LICENSE=accept \
+  	--net=host \
+  	-t \
+  	-v /opt/ibm/cluster:/installer/cluster \
+  	${inception_image} \
+  	install
+	container_ret=$?
+	if [ $container_ret -ne 0 ]		
+	then
+		echo "Inception install failed retry ..."
+	else
+		echo "Inception install completed ..."
+		break
+	fi
+done
 check_container $container_ret "Docker run command to install ICP failed"
 # if additional post-install scripts specified, run the scripts through the installer now
 for script in ${s3_patch_scripts}; do

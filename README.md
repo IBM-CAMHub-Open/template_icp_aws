@@ -47,7 +47,7 @@ The following sections explains how this terraform template works, the required 
 
 |name | required                        | value        |
 |----------------|------------|--------------|
-| `aws_region`   | no           | AWS region that the VPC will be created in.  By default, uses `us-east-2`.  Note that for an HA installation, the AWS selected region should have at least 3 availability zones. |
+| `aws_region`   | no           | AWS region that the VPC will be created in.  By default, uses `us-east-1`.  Note that for an HA installation, the AWS selected region should have at least 3 availability zones. |
 | `azs`          | no           | AWS Availability Zones that the VPC will be created in, e.g. `[ "a", "b", "c"]` to install in three availability zones.  By default, uses `["a", "b", "c"]`.  Note that the AWS selected region should have at least 3 availability zones for high availability.  Setting to a single availability zone will disable high availability and not provision EFS, in this case, reduce the number of master and proxy nodes to 1. |
 | `key_name`     | yes          | AWS keypair name to assign to instances     |
 | `ami` | no | Base AMI to use for all EC2 instances.  If none provided, will search for latest version of RHEL 7.5 |
