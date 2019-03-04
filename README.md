@@ -252,8 +252,8 @@ For High Available ICP deployment there must be atleast 3 master, 3 proxy, 3 man
 | Vulnerability Advisor Node | {"nodes":"3","type":"m4.2xlarge","ami":"ami-0f9cf087c1f27d9b1","disk":"300","docker_vol":"100","ebs_optimized":true} | Vulnerability Advisor node details. Each VA node will be created in a different AZS. Number of AZS, public subnet and private subnet must match the number of VA node. |
 | Cluster Name | icp | ICP Cluster Name |
 | ICP Password |  | ICP user password |
-| Docker Package Location |  | Docker package location is required when installing ICP EE on RedHat. Prefix the location string with protocol. Example s3://, http:// or nfs://.  |
-| ICP EE Image Location |  | Image location of ICP EE. Prefix the location string with protocol Example: s3://, http:// or nfs://. |
+| Docker Package Location |  | Docker package location is required when installing ICP EE on RedHat. Package is expected in AWS s3 bucket. Prefix the location string with protocol s3://. |
+| ICP EE Image Location |  | Image location of ICP EE. Package is expected in AWS s3 bucket. Prefix the location string with s3://. |
 | ICP Inception Image | ibmcom/icp-inception-amd64:3.1.1-ee | Name of the bootstrap installation image. |
 
 #### Networking

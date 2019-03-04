@@ -469,7 +469,7 @@
     {
       "name": "docker_package_location",
       "label": "Docker Package Location",
-      "description": "Docker package location is required when installing ICP EE on RedHat. Prefix the location string with protocol. Example s3://, http:// or nfs://. ",
+      "description": "Docker package location is required when installing ICP EE on RedHat. Package is expected in AWS s3 bucket. Prefix the location string with protocol s3://. ",
       "type": "string",
       "group_name": "Globals",
       "required": false,
@@ -481,7 +481,7 @@
     {
       "name": "image_location",
       "label": "ICP EE Image Location",
-      "description": "Image location of ICP EE. Prefix the location string with protocol Example: s3://, http:// or nfs://.",
+      "description": "Image location of ICP EE. Package is expected in AWS s3 bucket. Prefix the location string with s3://.",
       "type": "string",
       "group_name": "Globals",
       "required": true,
