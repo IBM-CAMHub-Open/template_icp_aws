@@ -320,14 +320,14 @@ Note the other parameters in the `icp-deploy.tf` module.  The config files are s
 
 ### Installing IBM Cloud Private Community Edition 
 
-The following parameters are required settings to install IBM Cloud Private Community Edition.  These values are the preferred values for any conflicting paramters in the `terraform.tfvars` file, as specified above in the [Prerequisites](#prerequisites) section.  These settings have been validated on IBM Cloud Private 3.1.0 Community Edition.
+The following parameters are required settings to install IBM Cloud Private Community Edition.  These values are the preferred values for any conflicting paramters in the `terraform.tfvars` file, as specified above in the [Prerequisites](#prerequisites) section.  These settings have been validated on IBM Cloud Private 3.1.1 Community Edition.
 
 ```
 image_location = ""
 patch_images = []
 patch_scripts = []
 
-icp_inception_image = "ibmcom/icp-inception-amd64:3.1.0"
+icp_inception_image = "ibmcom/icp-inception-amd64:3.1.1"
 
 bastion = {
  nodes = "1"
