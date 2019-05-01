@@ -464,7 +464,9 @@
       "secured": true,
       "hidden": false,
       "immutable": false,
-      "immutable_after_create": false
+      "immutable_after_create": false,
+      "regex": "^([a-zA-Z0-9\\-]{8,})$",
+      "regexdesc": "Password can have lower and upper case alphabets, numbers and dash. Minimum length must be eight characters."
     },
     {
       "name": "docker_package_location",

@@ -1,5 +1,5 @@
 {
-    "name": "IBM Cloud Private highly-available cluster",
+    "name": "IBM Cloud Private highly-available cluster on Amazon",
     "description": "This template will deploy IBM Cloud Private in a high availability configuration",
     "version": "1.0",
     "imageUrl": "",

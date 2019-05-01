@@ -63,6 +63,8 @@ cluster_CA_domain: ${var.user_provided_cert_dns != "" ? var.user_provided_cert_d
 disabled_management_services: [ "istio", "custom-metrics-adapter", "${var.va["nodes"] == 0 ? "va" : "" }", "${var.va["nodes"] == 0 ? "vulnerability-advisor": ""}" ]
 kibana_install: true
 cluster_name: ${var.instance_name}
+password_rules:
+  - ^([a-zA-Z0-9\-]{8,})$$
 EOF
 #  source = "${path.module}/items-config.yaml"
 }
