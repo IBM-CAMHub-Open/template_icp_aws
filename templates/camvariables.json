@@ -464,7 +464,9 @@
       "secured": true,
       "hidden": false,
       "immutable": false,
-      "immutable_after_create": false
+      "immutable_after_create": false,
+      "regex": "^([a-zA-Z0-9\\-]{8,})$",
+      "regexdesc": "Password can have lower and upper case alphabets, numbers and dash. Minimum length must be eight characters."
     },
     {
       "name": "docker_package_location",
@@ -495,7 +497,7 @@
       "label": "ICP Inception Image",
       "description": "Name of the bootstrap installation image.",
       "type": "string",
-      "default": "ibmcom/icp-inception-amd64:3.1.1-ee",
+      "default": "ibmcom/icp-inception-amd64:3.2.0-ee",
       "group_name": "Globals",
       "required": true,
       "secured": false,

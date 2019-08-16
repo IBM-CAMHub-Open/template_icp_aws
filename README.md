@@ -2,7 +2,7 @@
 
 This Terraform configurations uses the [AWS provider](https://www.terraform.io/docs/providers/aws/index.html) to provision virtual machines on AWS to prepare VMs and deploy [IBM Cloud Private](https://www.ibm.com/cloud-computing/products/ibm-cloud-private/) on them.  This Terraform template automates best practices learned from installing ICP on AWS at numerous client sites in production.
 
-This [template](https://github.com/IBM-CAMHub-Open/template_icp_aws/tree/master/templates) provisions a highly-available cluster with ICP 3.1.1 Enterprise Edition. This template can be executed either using [Terraform Automation](https://www.terraform.io/) or using [IBM Cloud Automation Manager](https://www.ibm.com/support/knowledgecenter/en/SS2L37/product_welcome_cloud_automation_manager.html).
+This [template](https://github.com/IBM-CAMHub-Open/template_icp_aws/tree/master/templates) provisions a highly-available cluster with ICP 3.2.0 Enterprise Edition. This template can be executed either using [Terraform Automation](https://www.terraform.io/) or using [IBM Cloud Automation Manager](https://www.ibm.com/support/knowledgecenter/en/SS2L37/product_welcome_cloud_automation_manager.html).
 
 * [Infrastructure Architecture](#infrastructure-architecture)
 * [Executing the template using Terraform Automation](#executing-the-template-using-terraform-automation)
@@ -37,8 +37,8 @@ The following sections explains how this terraform template works, the required 
 
 1. Create an S3 bucket in the same region that the ICP cluster will be created and upload the ICP binaries.  Make note of the bucket name.  You can use the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/awscli-install-bundle.html) to do this.  
 
-  For ICP 3.1.1-EE, you will need to copy the following:
-  - the ICP binary package tarball (`ibm-cloud-private-x86_64-3.1.1.tar.gz`)
+  For ICP 3.2.0-EE, you will need to copy the following:
+  - the ICP binary package tarball (`ibm-cloud-private-x86_64-3.2.0.tar.gz`)
   - ICP Docker package (`icp-docker-18.03.1_x86_64`)
 
    The ICP patched installer image and fixpack script can be acquired from [IBM Fix Central](https://www.ibm.com/support/fixcentral/).  
@@ -52,16 +52,16 @@ The following sections explains how this terraform template works, the required 
 | `key_name`     | yes          | AWS keypair name to assign to instances     |
 | `ami` | no | Base AMI to use for all EC2 instances.  If none provided, will search for latest version of RHEL 7.5 |
 | `docker_package_location` | no         | S3 URL of the ICP docker package for RHEL (e.g. `s3://<bucket>/<filename>`). Ubuntu will use `docker-ce` from the [Docker apt repository](https://docs.docker.com/install/linux/docker-ce/ubuntu/).  If Docker is already installed in the base AMI, this step will be skipped. |
-| `image_location` | no         | S3 URL of the ICP binary package (e.g. `s3://<bucket>/ibm-cloud-private-x86_64-3.1.1.tar.gz`).  Can also be a local path, e.g. `./icp-install/ibm-cloud-private-x86_64-3.1.1.tar.gz`; in this case the Terraform automation will create an S3 bucket and upload the binary package.  If provided, the automation will download the binaries from S3 and perform a `docker load` on every instance.  Note that it is faster to create an instance, install docker, perform the `docker load`, and convert to an AMI for use as a base instance for all node role types, as loading docker images takes around 20 minutes per EC2 instance. If the installer image is already on the EC2 instance, this step is skipped. |
+| `image_location` | no         | S3 URL of the ICP binary package (e.g. `s3://<bucket>/ibm-cloud-private-x86_64-3.2.0.tar.gz`).  Can also be a local path, e.g. `./icp-install/ibm-cloud-private-x86_64-3.2.0.tar.gz`; in this case the Terraform automation will create an S3 bucket and upload the binary package.  If provided, the automation will download the binaries from S3 and perform a `docker load` on every instance.  Note that it is faster to create an instance, install docker, perform the `docker load`, and convert to an AMI for use as a base instance for all node role types, as loading docker images takes around 20 minutes per EC2 instance. If the installer image is already on the EC2 instance, this step is skipped. |
 | `patch_images` | no         | A list of S3 URLs for the images to load to each ICP node before installation.  For example, for ICP 2.1.0.3 fixpack 1, this would be `[ "s3://<bucket>/icp-inception-amd64.2.1.0.3.fp1.tar" ]`.  If provided, the automation will download these additional binaries from S3 and perform a `docker load` on every EC2 instance in the ICP cluster. |
 | `patch_scripts` | no         | A list of S3 URLs for the patch scripts to execute after installation completed.  For example, for ICP 2.1.0.3 fixpack 1, this would be `[ "s3://<bucket>/ibm-cloud-private-2.1.0.3-fp1.sh" ]`.  If provided, the automation will download these additional scripts from S3 and execute them in order through the `icp-inception` image as post-install commands. |
-| `icp_inception_image` | no | Name of the bootstrap installation image.  By default it uses `ibmcom/icp-inception-amd64:3.1.1-ee` to indicate 3.1.1 EE, but this will vary in each release.|
+| `icp_inception_image` | no | Name of the bootstrap installation image.  By default it uses `ibmcom/icp-inception-amd64:3.2.0-ee` to indicate 3.2.0 EE, but this will vary in each release.|
 | `existing_iam_instance_profile_name` | no | If an IAM role is created beforehand, will assign the role with this name to all EC2 instances. See section on IAM roles for more information on the required policies. If blank, will attempt to create an IAM role.|
 | `user_provided_cert_dns` | no | The DNS name in a user-provided TLS certificate, if provided |
 
 See [Terraform documentation](https://www.terraform.io/intro/getting-started/variables.html) for the format of this file.
 
-5. If using a user-provided TLS certificate containing a custom DNS name, copy `icp-auth.crt` and `icp-auth.key` to this directory before installation to the `cfc-certs` directory.  See [documentation](https://www.ibm.com/support/knowledgecenter/en/SSBS6K_3.1.1/installing/create_ca_cert.html) for more details.  The certificate should contain the `user_provided_cert_dns` as a common name, and the DNS entry corresponding should be a CNAME pointing at the created ELB DNS entry for the master console.
+5. If using a user-provided TLS certificate containing a custom DNS name, copy `icp-auth.crt` and `icp-auth.key` to this directory before installation to the `cfc-certs` directory.  See [documentation](https://www.ibm.com/support/knowledgecenter/en/SSBS6K_3.2.0/installing/create_ca_cert.html) for more details.  The certificate should contain the `user_provided_cert_dns` as a common name, and the DNS entry corresponding should be a CNAME pointing at the created ELB DNS entry for the master console.
 
 6. Provide AWS credentials using environment variables:
 
@@ -254,7 +254,7 @@ For High Available ICP deployment there must be atleast 3 master, 3 proxy, 3 man
 | ICP Password |  | ICP user password |
 | Docker Package Location |  | Docker package location is required when installing ICP EE on RedHat. Package is expected in AWS s3 bucket. Prefix the location string with protocol s3://. |
 | ICP EE Image Location |  | Image location of ICP EE. Package is expected in AWS s3 bucket. Prefix the location string with s3://. |
-| ICP Inception Image | ibmcom/icp-inception-amd64:3.1.1-ee | Name of the bootstrap installation image. |
+| ICP Inception Image | ibmcom/icp-inception-amd64:3.2.0-ee | Name of the bootstrap installation image. |
 
 #### Networking
 
@@ -297,7 +297,7 @@ This template creates the following data objects that can be used in other templ
 
 ## Installation Procedure
 
-The installer automates the install procedure described [here](https://www.ibm.com/support/knowledgecenter/en/SSBS6K_3.1.1/installing/installing.html).
+The installer automates the install procedure described [here](https://www.ibm.com/support/knowledgecenter/en/SSBS6K_3.2.0/installing/installing.html).
 
 ### ICP Installation Parameters on AWS
 
@@ -320,14 +320,14 @@ Note the other parameters in the `icp-deploy.tf` module.  The config files are s
 
 ### Installing IBM Cloud Private Community Edition 
 
-The following parameters are required settings to install IBM Cloud Private Community Edition.  These values are the preferred values for any conflicting paramters in the `terraform.tfvars` file, as specified above in the [Prerequisites](#prerequisites) section.  These settings have been validated on IBM Cloud Private 3.1.1 Community Edition.
+The following parameters are required settings to install IBM Cloud Private Community Edition.  These values are the preferred values for any conflicting paramters in the `terraform.tfvars` file, as specified above in the [Prerequisites](#prerequisites) section.  These settings have been validated on IBM Cloud Private 3.2.0 Community Edition.
 
 ```
 image_location = ""
 patch_images = []
 patch_scripts = []
 
-icp_inception_image = "ibmcom/icp-inception-amd64:3.1.1"
+icp_inception_image = "ibmcom/icp-inception-amd64:3.2.0"
 
 bastion = {
  nodes = "1"
@@ -363,15 +363,15 @@ worker = {
 
 ### ICP Console access
 
-The ICP console can be accessed at `https://<cluster_lb_address>:8443`.  See [documentation](https://www.ibm.com/support/knowledgecenter/SSBS6K_3.1.1/manage_cluster/cfc_gui.html).
+The ICP console can be accessed at `https://<cluster_lb_address>:8443`.  See [documentation](https://www.ibm.com/support/knowledgecenter/SSBS6K_3.2.0/manage_cluster/cfc_gui.html).
 
 ### ICP Private Image Registry access
 
-The registry is available at `https://<cluster_lb_address>:8500`.  See [documentation](https://www.ibm.com/support/knowledgecenter/en/SSBS6K_3.1.1/manage_images/configuring_docker_cli.html) for how to configure Docker to access the registry.
+The registry is available at `https://<cluster_lb_address>:8500`.  See [documentation](https://www.ibm.com/support/knowledgecenter/en/SSBS6K_3.2.0/manage_images/configuring_docker_cli.html) for how to configure Docker to access the registry.
 
 ### ICP Kubernetes API access
 
-The Kubernetes API can be reached at `https://<cluster_lb_address>:8001`.  To obtain a token, see the [documentation](https://www.ibm.com/support/knowledgecenter/en/SSBS6K_3.1.1/manage_cluster/cfc_cli.html) or this [blog post](https://www.ibm.com/developerworks/community/blogs/fe25b4ef-ea6a-4d86-a629-6f87ccf4649e/entry/Configuring_the_Kubernetes_CLI_by_using_service_account_tokens1?lang=en),
+The Kubernetes API can be reached at `https://<cluster_lb_address>:8001`.  To obtain a token, see the [documentation](https://www.ibm.com/support/knowledgecenter/en/SSBS6K_3.2.0/manage_cluster/cfc_cli.html) or this [blog post](https://www.ibm.com/developerworks/community/blogs/fe25b4ef-ea6a-4d86-a629-6f87ccf4649e/entry/Configuring_the_Kubernetes_CLI_by_using_service_account_tokens1?lang=en),
 
 ### ICP Ingress Controller
 
@@ -385,4 +385,4 @@ The AWS Cloud provider provides Kubernetes integration with Elastic Load Balance
 
 Copyright IBM Corp. 2019
 
-Template Version - 3.1.1
+Template Version - 3.2.0
