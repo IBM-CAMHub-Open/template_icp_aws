@@ -49,7 +49,7 @@ resource "aws_s3_bucket_object" "icp_config_yaml" {
   bucket = "${aws_s3_bucket.icp_config_backup.id}"
   key    = "icp-terraform-config.yaml"
   content = <<EOF
-kubelet_nodename: fqdn
+kubelet_nodename: ip
 ${var.use_aws_cloudprovider ? "cloud_provider: aws" : "" }
 calico_tunnel_mtu: 8981
 ansible_user: icpdeploy
@@ -63,6 +63,8 @@ cluster_CA_domain: ${var.user_provided_cert_dns != "" ? var.user_provided_cert_d
 disabled_management_services: [ "istio", "custom-metrics-adapter", "${var.va["nodes"] == 0 ? "va" : "" }", "${var.va["nodes"] == 0 ? "vulnerability-advisor": ""}" ]
 kibana_install: true
 cluster_name: ${var.instance_name}
+password_rules:
+  - ^([a-zA-Z0-9\-]{8,})$$
 EOF
 #  source = "${path.module}/items-config.yaml"
 }

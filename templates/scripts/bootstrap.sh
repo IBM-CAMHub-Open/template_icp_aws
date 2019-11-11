@@ -158,10 +158,25 @@ image_load() {
       IMAGE_DIR=/opt/ibm/cluster/images
       IMAGE_NAME=`echo $image_location | rev | cut -d"/" -f1 | rev`
       mkdir -p ${IMAGE_DIR}
-      ${awscli} s3 cp ${image_location} ${IMAGE_DIR}/$IMAGE_NAME
-      tar zxf ${IMAGE_DIR}/$IMAGE_NAME -O | docker load
+      for count in {1..5}
+	  do
+	  	echo "Download docker images from ${image_location} to ${IMAGE_DIR}/$IMAGE_NAME try $count ..."
+      	${awscli} s3 cp ${image_location} ${IMAGE_DIR}/$IMAGE_NAME
+      	if [ -f "${IMAGE_DIR}/$IMAGE_NAME" ]; then     
+      		echo "Docker images downloaded from ${image_location} to ${IMAGE_DIR}/$IMAGE_NAME untar image"
+      		tar zxf ${IMAGE_DIR}/$IMAGE_NAME -O | docker load
+      		break
+        else
+        	if [ $count -eq 5 ]; then
+        		echo "Docker image ${image_location} not downloaded to ${IMAGE_DIR}/$IMAGE_NAME"
+  				touch /opt/ibm/cluster/icp_install_failed
+  				exit 1
+            fi
+  	  	fi
+  	  done
     fi
   fi
+  
 
   # if additional patches specified, load the images now
   for img in `echo "${s3_patch_images}"`; do

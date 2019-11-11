@@ -121,7 +121,7 @@ chmod 400 /opt/ibm/cluster/ssh_key
 
 # find my IP address, which will be on the interface the default route is configured on
 myip=`ip route get 8.8.8.8 | awk 'NR==1 {print $NF}'`
-
+myhostname=`hostname`
 # wait for all hosts in the cluster to finish cloud-init
 docker run \
   -e ANSIBLE_HOST_KEY_CHECKING=false \
@@ -138,6 +138,48 @@ docker run \
   -a "path=/var/lib/cloud/instance/boot-finished timeout=18000"
 container_ret=$?
 check_container $container_ret "Docker run command wait for all hosts in the cluster to finish cloud-init failed"
+#Add all master nodes to /etc/hosts of the master nodes
+inputfile="/opt/ibm/cluster/hosts"
+startidx="false"
+ips=""
+while IFS= read -r line
+do
+  if [[ "$startidx" == "true" ]]
+  then
+  	if [[ -z "$line" ]]
+  	then
+  		echo "Master node list ended"
+  		break
+	fi 
+  	if [[ "$line" != "$myip" ]]
+  	then
+  		echo "Add $line to ip list"
+  		ips="$ips $line"
+ 	fi
+  fi
+  if [[ "$line" == "[master]" ]]
+  then
+  	echo "Master node list started"
+  	startidx="true"
+  fi
+done < "$inputfile"
+
+for ip in $ips
+do
+	echo "Process node $ip"
+	host_name=$(sudo ssh -o 'StrictHostKeyChecking no' -i /opt/ibm/cluster/ssh_key icpdeploy@$ip hostname)
+    sudo echo $ip $host_name >> /etc/hosts
+    sudo ssh -o 'StrictHostKeyChecking no' -i /opt/ibm/cluster/ssh_key icpdeploy@$ip "echo $myip $myhostname | sudo tee -a /etc/hosts"
+    for ip1 in $ips
+    do
+    	if [[ "$ip1" != "$ip" ]]
+    	then
+    		host_name1=$(sudo ssh -o 'StrictHostKeyChecking no' -i /opt/ibm/cluster/ssh_key icpdeploy@$ip1 hostname)
+    		sudo ssh -o 'StrictHostKeyChecking no' -i /opt/ibm/cluster/ssh_key icpdeploy@$ip "echo $ip1 $host_name1 | sudo tee -a /etc/hosts"
+    	fi
+	done	
+done
+
 for count in {1..5} 
 do
 	# kick off the installer

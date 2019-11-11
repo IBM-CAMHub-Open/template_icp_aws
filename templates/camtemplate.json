@@ -23,7 +23,6 @@
       }
     },
     "metadata": {
-      "displayName": "IBM Cloud Private highly-available cluster in AWS",
       "providerDisplayName": "Amazon EC2",
       "longDescription": "This template will deploy an HA topology of IBM Cloud Private into the Amazon cloud",
       "bullets": [{
